@@ -69,7 +69,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Ete Well, exemplary',
+                      'Be Well, Everyday',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
