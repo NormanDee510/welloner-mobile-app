@@ -1,19 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
+//import 'features/services/lookup_service.dart';
+import 'package:mobileapp/features/services/lookup_service.dart';
+//import '../services/user_service.dart';
+import 'package:mobileapp/features/services/user_service.dart';
+import '../../models/user_details.dart';
 
-import 'package:mobileapp/main.dart';
+class LoginPage extends StatefulWidget {
+  final LookupService lookupService;
+  final UserDetailsService userService;
 
-void main() => runApp(const MyApp());
+  const LoginPage({
+    Key? key,
+    required this.lookupService,
+    required this.userService,
+  }) : super(key: key);
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+// class LookupService {
+// }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// class UserDetailsService {
+// }
+
+class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
@@ -23,19 +34,19 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
       ),
-      home: const SignUpPage(),
+      home: const SignInPage(),
     );
   }
 }
 
-class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key});
+class SignInPage extends StatefulWidget {
+  const SignInPage({super.key});
 
   @override
-  State<SignUpPage> createState() => _SignUpPageState();
+  State<SignInPage> createState() => _SignInPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignInPageState extends State<SignInPage> {
   bool _rememberMe = false;
   bool _obscurePassword = true;
 
@@ -69,7 +80,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Ete Well, exemplary',
+                      'Be Well, Everyday',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
@@ -183,7 +194,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                   ),
                   child: const Text(
-                    'Sign me in ',
+                    'Sign me in',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -213,4 +224,4 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
     );
   }
-}
+}// TODO Implement this library.
