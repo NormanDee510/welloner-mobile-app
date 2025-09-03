@@ -1,19 +1,21 @@
-import 'dart:convert';
+//import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mobileapp/features/models/job.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
+//import 'package:provider/provider.dart';
 import 'package:mobileapp/features/services/dashboard_service.dart';
+import 'package:mobileapp/features/models/dashboard.dart';
+//import 'package:mobileapp/features/auth/pages/dashboard_screen.dart';
+//import 'package:mobileapp/app/core/constants/environment.dart';
+import 'package:mobileapp/features/services/job_service.dart';
 //import 'package:mobileapp/services/professional_event_service.dart';
 //import 'package:mobileapp/services/chat_service.dart';
-//import 'package:mobileapp/services/job_service.dart';
-//import 'package:mobileapp/models/dashboard.dart';
 //import 'package:mobileapp/models/professional_event.dart';
-//import 'package:mobileapp/models/job.dart';
 //import 'package:mobileapp/models/message.dart';
-import 'package:mobileapp/app/core/constants/environment.dart';
+
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, required lookupService, required userService});
@@ -44,21 +46,23 @@ class _DashboardPageState extends State<DashboardPage> {
   // int? _receiverUserId;
   
   // Dashboard data
-  //DashboardData? _dashboardData;
+  DashboardData? _dashboardData;
   
   // Services
   late DashboardService _dashboardService;
+   late JobService _jobService;
   // late ProfessionalEventService _eventService;
   // late ChatService _chatService;
-  // late JobService _jobService;
+  
 
   @override
   void initState() {
     super.initState();
-   // _dashboardService = DashboardService(httpClient: null);
+    _dashboardService = DashboardService(httpClient: http.Client());
+    _jobService = JobService();
     // _eventService = ProfessionalEventService();
     // _chatService = ChatService();
-    // _jobService = JobService();
+    
     
     _initializeDashboard();
    // _loadUserData();
@@ -97,40 +101,40 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _loadDashboardData() async {
     final data = await _dashboardService.getDashboardData();
     setState(() {
-    //  _dashboardData = data;
+      _dashboardData = data;
       _updateDonutChart();
     });
   }
 
-  // Future<void> _loadJobAnalytics() async {
-  //   final pendingJobs = await _jobService.getPendingJobs();
-  //   final completedJobs = await _jobService.getCompletedJobs();
+  Future<void> _loadJobAnalytics() async {
+    final pendingJobs = await _jobService.getAllPendingJobs();
+    final completedJobs = await _jobService.getAllCompletedJobs();
     
-  //   // Convert to chart data points
-  //   setState(() {
-  //     _pendingJobsData = _convertJobsToChartData(pendingJobs);
-  //     _completedJobsData = _convertJobsToChartData(completedJobs);
-  //   });
-  // }
+    // Convert to chart data points
+    setState(() {
+      _pendingJobsData = _convertJobsToChartData(pendingJobs);
+      _completedJobsData = _convertJobsToChartData(completedJobs);
+    });
+  }
 
-  // List<FlSpot> _convertJobsToChartData(List<Job> jobs) {
-  //   return jobs.asMap().entries.map((e) {
-  //     return FlSpot(e.key.toDouble(), e.value.id.toDouble());
-  //   }).toList();
-  // }
+  List<FlSpot> _convertJobsToChartData(List<Job> jobs) {
+    return jobs.asMap().entries.map((e) {
+      return FlSpot(e.key.toDouble(), e.value.id.toDouble());
+    }).toList();
+  }
 
   void _updateDonutChart() {
-   // if (_dashboardData == null) return;
+    if (_dashboardData == null) return;
     
     setState(() {
       _donutChartSections = [
         PieChartSectionData(
-       //   value: _dashboardData!.pendingJobs.toDouble(),
+          value: _dashboardData!.dashTotalNumberOfPendingJobs.toDouble(),
           color: Colors.blue,
           title: 'Pending',
         ),
         PieChartSectionData(
-        //  value: _dashboardData!.completedJobs.toDouble(),
+          value: _dashboardData!.allCompletedJobs.toDouble(),
           color: Colors.green,
           title: 'Completed',
         ),

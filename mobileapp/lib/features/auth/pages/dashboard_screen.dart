@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
-import 'package:fl_chart/fl_chart.dart';
+//import 'package:syncfusion_flutter_calendar/calendar.dart';
+//import 'package:fl_chart/fl_chart.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -11,7 +11,7 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Mock data - replace with actual data from services
+  // Fixed percentages to use double values
   final dashboardData = {
     'dashNumberOfCompleteJobsInCurrentMonth': 42,
     'completedJobsInCurrentMonthPercentage': 70.1,
@@ -27,11 +27,11 @@ class _DashboardPageState extends State<DashboardPage> {
   };
 
   final List<Map<String, dynamic>> professionalSuburbs = [
-    {'suburbName': 'Sandton', 'percentage': 32},
-    {'suburbName': 'Midrand', 'percentage': 24},
-    {'suburbName': 'Rosebank', 'percentage': 18},
-    {'suburbName': 'Fourways', 'percentage': 14},
-    {'suburbName': 'Randburg', 'percentage': 12},
+    {'suburbName': 'Sandton', 'percentage': 32.0},
+    {'suburbName': 'Midrand', 'percentage': 24.0},
+    {'suburbName': 'Rosebank', 'percentage': 18.0},
+    {'suburbName': 'Fourways', 'percentage': 14.0},
+    {'suburbName': 'Randburg', 'percentage': 12.0},
   ];
 
   final List<Map<String, dynamic>> recentJobs = [
@@ -45,10 +45,11 @@ class _DashboardPageState extends State<DashboardPage> {
   final LatLng _mapCenter = const LatLng(-26.150430, 28.150230);
   double _zoom = 17.0;
   final Set<Marker> _markers = {};
+  GoogleMapController? _mapController;
 
   // Calendar variables
-  final CalendarController _calendarController = CalendarController();
-  final List<Appointment> _calendarEvents = [];
+  //final CalendarController _calendarController = CalendarController();
+  //final List<Appointment> _calendarEvents = [];
 
   // Chat variables
   final TextEditingController _messageController = TextEditingController();
@@ -58,7 +59,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _addMarkers();
-    _loadCalendarEvents();
+   // _loadCalendarEvents();
     _loadMessages();
   }
 
@@ -74,20 +75,18 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  void _loadCalendarEvents() {
-    // Mock events - replace with actual data
-    setState(() {
-      _calendarEvents.add(Appointment(
-        startTime: DateTime.now().add(const Duration(hours: 2)),
-        endTime: DateTime.now().add(const Duration(hours: 4)),
-        subject: 'Meeting with Client',
-        color: Colors.teal,
-      ));
-    });
-  }
+  // void _loadCalendarEvents() {
+  //   setState(() {
+  //     _calendarEvents.add(Appointment(
+  //       startTime: DateTime.now().add(const Duration(hours: 2)),
+  //       endTime: DateTime.now().add(const Duration(hours: 4)),
+  //       subject: 'Meeting with Client',
+  //       color: Colors.teal,
+  //     ));
+  //   });
+  // }
 
   void _loadMessages() {
-    // Mock messages - replace with actual data
     setState(() {
       _messages.addAll([
         {'senderUserId': 1, 'message': 'Hello, when can you start?', 'createdDate': DateTime.now().subtract(const Duration(minutes: 15))},
@@ -108,6 +107,17 @@ class _DashboardPageState extends State<DashboardPage> {
       });
       _messageController.clear();
     });
+  }
+
+  // Function to update map zoom
+  void _updateZoom(double zoomDelta) {
+    setState(() {
+      _zoom += zoomDelta;
+      _zoom = _zoom.clamp(13.0, 20.0);
+    });
+    _mapController?.animateCamera(CameraUpdate.newCameraPosition(
+      CameraPosition(target: _mapCenter, zoom: _zoom),
+    ));
   }
 
   @override
@@ -208,7 +218,7 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: Icons.check_circle,
           title: "THIS MONTH'S JOBS COMPLETED",
           value: dashboardData['dashNumberOfCompleteJobsInCurrentMonth'].toString(),
-          percentage: dashboardData['completedJobsInCurrentMonthPercentage']?.toDouble() ?? 0.0, // Fixed,
+          percentage: dashboardData['completedJobsInCurrentMonthPercentage'] as double,
           progressColor: Colors.teal,
           bgColor: Colors.teal,
         ),
@@ -216,7 +226,7 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: Icons.access_time,
           title: "THIS MONTH'S JOBS PENDING",
           value: dashboardData['dashNumberOfPendingJobsInCurrentMonth'].toString(),
-          percentage: dashboardData['numberOfPendingJobsInCurrentMonthPercentage']?.toDouble() ?? 0.0, // Fixed,
+          percentage: dashboardData['numberOfPendingJobsInCurrentMonthPercentage'] as double,
           progressColor: Colors.blue,
           bgColor: Colors.blue,
         ),
@@ -224,7 +234,7 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: Icons.calendar_month,
           title: "NEXT MONTH'S JOBS",
           value: dashboardData['nextMonthJobs'].toString(),
-          percentage: dashboardData['nextMonthJobsPercentage']?.toDouble() ?? 0.0, // Fixed,
+          percentage: dashboardData['nextMonthJobsPercentage'] as double,
           progressColor: Colors.indigo,
           bgColor: Colors.indigo,
         ),
@@ -232,7 +242,7 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: Icons.workspace_premium,
           title: "ALL TIME JOBS COMPLETED",
           value: dashboardData['allCompletedJobs'].toString(),
-          percentage: dashboardData['completedJobsPercentage']?.toDouble() ?? 0.0, // Fixed,
+          percentage: dashboardData['completedJobsPercentage'] as double,
           progressColor: Colors.grey[800]!,
           bgColor: Colors.grey[800]!,
         ),
@@ -355,7 +365,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       padding: EdgeInsets.all(16),
                       child: SizedBox(
                         height: 250,
-                        child: Placeholder(), // Replace with actual chart
+                      //  child: _JobsLineChart(), // Actual chart implementation
                       ),
                     ),
                     Container(
@@ -385,7 +395,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           Expanded(
                             child: SizedBox(
                               height: 150,
-                              child: const Placeholder(), // Replace with donut chart
+                              //child: _JobsDonutChart(), // Actual chart implementation
                             ),
                           ),
                         ],
@@ -401,7 +411,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               Icon(Icons.circle, color: Colors.blue, size: 12),
                               const SizedBox(width: 4),
                               Text(
-                                '${dashboardData['totalNumberOfPendingJobHistoryPercentage']?.toStringAsFixed(1) ?? '0.0'}% Pending',
+                                '${dashboardData['totalNumberOfPendingJobHistoryPercentage']?.toStringAsFixed(1)}% Pending',
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ],
@@ -412,7 +422,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               Icon(Icons.circle, color: Colors.teal, size: 12),
                               const SizedBox(width: 4),
                               Text(
-                                '${dashboardData['totalNumberOfCompletedJobHistoryPercentage']?.toStringAsFixed(1) ?? '0.0'}% Completed',
+                                '${dashboardData['totalNumberOfCompletedJobHistoryPercentage']?.toStringAsFixed(1)}% Completed',
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ],
@@ -465,7 +475,9 @@ class _DashboardPageState extends State<DashboardPage> {
                             zoom: _zoom,
                           ),
                           markers: _markers,
-                          onMapCreated: (controller) {},
+                          onMapCreated: (controller) {
+                            _mapController = controller;
+                          },
                         ),
                       ),
                     ),
@@ -475,7 +487,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => setState(() => _zoom = (_zoom + 1).clamp(13.0, 20.0)),
+                              onPressed: () => _updateZoom(1),
                               icon: const Icon(Icons.add, size: 16),
                               label: const Text('Zoom In'),
                               style: ElevatedButton.styleFrom(
@@ -486,7 +498,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () => setState(() => _zoom = (_zoom - 1).clamp(13.0, 20.0)),
+                              onPressed: () => _updateZoom(-1),
                               icon: const Icon(Icons.remove, size: 16),
                               label: const Text('Zoom Out'),
                               style: ElevatedButton.styleFrom(
@@ -555,6 +567,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     itemBuilder: (context, index) {
                       final message = _messages[index];
                       final isSent = message['senderUserId'] == 1;
+                      final time = message['createdDate'] as DateTime;
                       
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -578,7 +591,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   Text(message['message']),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '${message['createdDate'].hour}:${message['createdDate'].minute}',
+                                    '${time.hour}:${time.minute.toString().padLeft(2, '0')}',
                                     style: TextStyle(
                                       color: Colors.grey[600],
                                       fontSize: 12,
@@ -653,18 +666,19 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 300,
-                  child: SfCalendar(
-                    view: CalendarView.day,
-                    controller: _calendarController,
-                    dataSource: _CalendarDataSource(_calendarEvents),
-                    monthViewSettings: const MonthViewSettings(
-                      showAgenda: true,
-                      appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-                    ),
-                  ),
-                ),
+                // SizedBox(
+                //   height: 300,
+                //   child: SfCalendar(
+                //     view: CalendarView.day,
+                //     controller: _calendarController,
+                //     dataSource: _CalendarDataSource(_calendarEvents),
+                //     monthViewSettings: const MonthViewSettings(
+                //       showAgenda: true,
+                //       appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                //     ),
+                //     headerHeight: 0, // Hide header
+                //   ),
+                // ),
                 Center(
                   child: TextButton(
                     onPressed: () {},
@@ -726,8 +740,89 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-class _CalendarDataSource extends CalendarDataSource {
-  _CalendarDataSource(List<Appointment> source) {
-    appointments = source;
-  }
-}
+// class _CalendarDataSource extends CalendarDataSource {
+//   _CalendarDataSource(List<Appointment> source) {
+//     appointments = source;
+//   }
+// }
+
+// Line chart implementation
+// class _JobsLineChart extends StatelessWidget {
+//   const _JobsLineChart();
+
+//   @override
+//   // Widget build(BuildContext context) {
+//   //   return LineChart(
+//   //     LineChartData(
+//   //       gridData: FlGridData(show: true),
+//   //       titlesData: FlTitlesData(show: true),
+//   //       borderData: FlBorderData(show: true),
+//   //       minX: 0,
+//   //       maxX: 11,
+//   //       minY: 0,
+//   //       maxY: 6,
+//   //       lineBarsData: [
+//   //         LineChartBarData(
+//   //           spots: [
+//   //             FlSpot(0, 3),
+//   //             FlSpot(2.6, 2),
+//   //             FlSpot(4.9, 5),
+//   //             FlSpot(6.8, 3.1),
+//   //             FlSpot(8, 4),
+//   //             FlSpot(9.5, 3),
+//   //             FlSpot(11, 4),
+//   //           ],
+//   //           isCurved: true,
+//   //           color: Colors.blue,
+//   //           barWidth: 4,
+//   //           belowBarData: BarAreaData(show: false),
+//   //         ),
+//   //         LineChartBarData(
+//   //           spots: [
+//   //             FlSpot(0, 4),
+//   //             FlSpot(2.6, 3),
+//   //             FlSpot(4.9, 4),
+//   //             FlSpot(6.8, 6),
+//   //             FlSpot(8, 3),
+//   //             FlSpot(9.5, 5),
+//   //             FlSpot(11, 3),
+//   //           ],
+//   //           isCurved: true,
+//   //           color: Colors.teal,
+//   //           barWidth: 4,
+//   //           belowBarData: BarAreaData(show: false),
+//   //         ),
+//   //       ],
+//   //     ),
+//   //   );
+//   // }
+// }
+
+// // Donut chart implementation
+// // class _JobsDonutChart extends StatelessWidget {
+//   const _JobsDonutChart();
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return PieChart(
+//       PieChartData(
+//         sectionsSpace: 0,
+//         centerSpaceRadius: 40,
+//         sections: [
+//           PieChartSectionData(
+//             color: Colors.blue,
+//             value: 45.2,
+//             showTitle: false,
+//             radius: 20,
+//           ),
+//           PieChartSectionData(
+//             color: Colors.teal,
+//             value: 54.8,
+//             showTitle: false,
+//             radius: 20,
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

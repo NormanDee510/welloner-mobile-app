@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mobileapp/features/models/user_details.dart';
+import 'package:mobileapp/app/core/constants/environment.dart';
 
 class UserDetailsService {
-  final String baseUrl;
+  final String apiBaseUrl;
+  final http.Client httpClient;
 
-  UserDetailsService({required this.baseUrl, required http.Client httpClient});
+  UserDetailsService({required this.apiBaseUrl, required this.httpClient});
 
   // Helper method to create headers
   Map<String, String> _getHeaders() {
@@ -14,8 +17,8 @@ class UserDetailsService {
     };
   }
 
-  // Error handling similar to Angular service
-  dynamic _handleError(http.Response response) {
+  // Error handling
+  http.Response _handleError(http.Response response) {
     if (response.statusCode >= 400 && response.statusCode < 500) {
       print('Client side error: ${response.body}');
       throw ClientException('Client error: ${response.statusCode}');
@@ -29,14 +32,18 @@ class UserDetailsService {
   // Login user
   Future<Map<String, dynamic>> loginUser(UserDetails user) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/Auth/login'),
+      final response = await httpClient.post(
+        Uri.parse('${Environment.apiBaseUrl}/api/Auth/login'),
         headers: _getHeaders(),
         body: json.encode(user.toJson()),
       );
 
       _handleError(response);
-      return json.decode(response.body);
+      final data = json.decode(response.body);
+      if (data is! Map<String, dynamic>) {
+        throw ClientException('Unexpected response format');
+      }
+      return data;
     } catch (e) {
       print('Login error: $e');
       rethrow;
@@ -46,14 +53,17 @@ class UserDetailsService {
   // Get all users
   Future<List<UserDetails>> getAllUsers() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/User'),
+      final response = await httpClient.get(
+        Uri.parse('${Environment.apiBaseUrl}/api/User'),
         headers: _getHeaders(),
       );
 
       _handleError(response);
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => UserDetails.fromJson(json)).toList();
+      final data = json.decode(response.body);
+      if (data is! List) {
+        throw ClientException('Expected a list of users');
+      }
+      return data.map((json) => UserDetails.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       print('Get users error: $e');
       rethrow;
@@ -63,14 +73,17 @@ class UserDetailsService {
   // Get user links
   Future<List<UserDetails>> getUserLinks() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/User/LinkUser'),
+      final response = await httpClient.get(
+        Uri.parse('${Environment.apiBaseUrl}/api/User/LinkUser'),
         headers: _getHeaders(),
       );
 
       _handleError(response);
-      final List<dynamic> data = json.decode(response.body);
-      return data.map((json) => UserDetails.fromJson(json)).toList();
+      final data = json.decode(response.body);
+      if (data is! List) {
+        throw ClientException('Expected a list of user links');
+      }
+      return data.map((json) => UserDetails.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       print('Get user links error: $e');
       rethrow;
@@ -80,16 +93,20 @@ class UserDetailsService {
   // Register user
   Future<UserDetails> registerUser(UserDetails user) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/Auth/register'),
+      final response = await httpClient.post(
+        Uri.parse('${Environment.apiBaseUrl}/api/Auth/register'),
         headers: _getHeaders(),
         body: json.encode(user.toJson()),
       );
 
       _handleError(response);
-      return UserDetails.fromJson(json.decode(response.body));
+      final data = json.decode(response.body);
+      if (data is! Map<String, dynamic>) {
+        throw ClientException('Unexpected response format');
+      }
+      return UserDetails.fromJson(data);
     } catch (e) {
-      print('Registration error: $e');
+      print('Registration error from user service: $e');
       rethrow;
     }
   }
@@ -99,7 +116,7 @@ class UserDetailsService {
 class ClientException implements Exception {
   final String message;
   ClientException(this.message);
-  
+
   @override
   String toString() => message;
 }
@@ -107,90 +124,7 @@ class ClientException implements Exception {
 class ServerException implements Exception {
   final String message;
   ServerException(this.message);
-  
+
   @override
   String toString() => message;
-}
-
-// UserDetails model with conversion methods
-class UserDetails {
-  int? id;
-  String userName;
-  String password;
-  bool isVerified;
-  String? passwordHash;
-  String? passwordSalt;
-  String? lastActive;
-  bool isDeleted;
-  int roleId;
-  String name;
-  String surname;
-  String gender;
-  String dateOfBirth;
-  int? linkFromUserId;
-  int linkToUserId;
-  String? roleName;
-
-  UserDetails({
-    this.id,
-    required this.userName,
-    required this.password,
-    this.isVerified = false,
-    this.passwordHash,
-    this.passwordSalt,
-    this.lastActive,
-    this.isDeleted = false,
-    required this.roleId,
-    required this.name,
-    required this.surname,
-    required this.gender,
-    required this.dateOfBirth,
-    this.linkFromUserId,
-    this.linkToUserId = 0,
-    this.roleName,
-  });
-
-  // Convert to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userName': userName,
-      'password': password,
-      'isVerified': isVerified,
-      'passwordHash': passwordHash,
-      'passwordSalt': passwordSalt,
-      'lastActive': lastActive,
-      'isDeleted': isDeleted,
-      'roleId': roleId,
-      'name': name,
-      'surname': surname,
-      'gender': gender,
-      'dateOfBirth': dateOfBirth,
-      'linkFromUserId': linkFromUserId,
-      'linkToUserId': linkToUserId,
-      'roleName': roleName,
-    };
-  }
-
-  // Create from JSON
-  factory UserDetails.fromJson(Map<String, dynamic> json) {
-    return UserDetails(
-      id: json['id'],
-      userName: json['userName'],
-      password: json['password'],
-      isVerified: json['isVerified'] ?? false,
-      passwordHash: json['passwordHash'],
-      passwordSalt: json['passwordSalt'],
-      lastActive: json['lastActive'],
-      isDeleted: json['isDeleted'] ?? false,
-      roleId: json['roleId'],
-      name: json['name'],
-      surname: json['surname'],
-      gender: json['gender'],
-      dateOfBirth: json['dateOfBirth'],
-      linkFromUserId: json['linkFromUserId'],
-      linkToUserId: json['linkToUserId'] ?? 0,
-      roleName: json['roleName'],
-    );
-  }
 }

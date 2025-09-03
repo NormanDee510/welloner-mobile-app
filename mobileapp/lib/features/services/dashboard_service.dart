@@ -47,16 +47,16 @@ class DashboardService {
     }
   }
 
-  Future<Dashboard> getDashboardData() async {
+  Future<DashboardData> getDashboardData() async {
     try {
-      // Note: Using hardcoded ID 2 as in Angular version - consider making dynamic
+      // Note: Using hardcoded ID 2 asconsider making dynamic
       final response = await httpClient.get(
         Uri.parse('${Environment.apiBaseUrl}api/Dashboard/2'),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
-        return Dashboard.fromJson(json.decode(response.body));
+        return DashboardData.fromJson(json.decode(response.body));
       } else {
         throw _handleError('Failed to load dashboard data', response.statusCode);
       }

@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:mobileapp/features/auth/pages/register_page.dart';
 import 'package:mobileapp/features/auth/pages/login_page.dart';
 import 'package:mobileapp/features/dashboard/dashboard_page.dart';
+import 'package:mobileapp/features/services/auth_service.dart';
 import 'package:mobileapp/features/services/lookup_service.dart';
 import 'package:mobileapp/features/services/user_service.dart';
+import 'package:mobileapp/features/job/jobsdefault_page.dart';
 
 
 class MyApp extends StatelessWidget {
   final LookupService lookupService;
   final UserDetailsService userService;
+  final  AuthService authService;
 
   const MyApp({
     Key? key,
     required this.lookupService,
     required this.userService,
+    required this.authService,
   }) : super(key: key);
 
   @override
@@ -30,13 +34,17 @@ class MyApp extends StatelessWidget {
              lookupService: lookupService,
             ),
         '/login_page': (context) => LoginPage(
-              userService: userService, 
+              authService: authService, 
               lookupService: lookupService,
             ),
         '/dashboard_page': (context) => DashboardPage(
           lookupService: lookupService,
           userService: userService,
         ),
+        // '/jobsdefault_page': (context) => JobsDefaultPage(
+        //       lookupService: lookupService, // Pass services if needed
+        //       userService: userService,
+        // ),
       },
       home: RegisterPage(
         lookupService: lookupService,  

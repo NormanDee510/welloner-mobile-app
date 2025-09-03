@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mobileapp/features/services/lookup_service.dart';
 import 'package:mobileapp/features/services/user_service.dart';
-import 'package:mobileapp/features/models/user_details.dart';
+import 'package:mobileapp/features/models/user_details.dart'; // Added for UserDetails
 
 class RegisterPage extends StatefulWidget {
   final LookupService lookupService;
   final UserDetailsService userService;
 
   const RegisterPage({
-    Key? key,
+    super.key, // Updated to use super.key for consistency with modern Flutter
     required this.lookupService,
     required this.userService,
-  }) : super(key: key);
+  });
 
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
-  DateTime? _selectedDate;
   String? _selectedGender;
 
   // Controllers
@@ -30,7 +28,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _dateOfBirthController = TextEditingController();
 
   @override
   void dispose() {
@@ -38,23 +36,8 @@ class _RegisterPageState extends State<RegisterPage> {
     _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _dobController.dispose();
+    _dateOfBirthController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-        _dobController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
   }
 
   Future<void> _registerUser() async {
@@ -70,27 +53,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final newUser = UserDetails(
-        userName: _emailController.text,
+        email: _emailController.text,
         password: _passwordController.text,
         name: _firstNameController.text,
         surname: _lastNameController.text,
         gender: _selectedGender!,
-        dateOfBirth: _dobController.text,
-        roleId: 2, // Default role ID for regular user
-        isVerified: false,
-        isDeleted: false,
-        linkToUserId: 0,
+        dateOfBirth: _dateOfBirthController.text,
+        claimStatusId: 0, // Adjust based on API requirements
+        roleId: 1, // Adjust based on API requirements
+        roleName: "User", // Adjust based on API requirements
       );
 
       final registeredUser = await widget.userService.registerUser(newUser);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registration successful! Welcome ${registeredUser.name}')),
       );
-      
+
       // Navigate to login or home screen
       Navigator.pop(context);
-      
     } on ClientException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registration error: ${e.message}')),
@@ -124,11 +105,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 Center(
                   child: Column(
                     children: [
-                      Image.asset(
-                        'assets/logo.png',
-                        height: 80,
-                        width: 80,
-                      ),
+                      // Image.asset(
+                      //   'assets/logo.png',
+                      //   height: 80,
+                      //   width: 80,
+                      // ),
                       const SizedBox(height: 16),
                       const Text(
                         'WellOner',
@@ -150,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                
+
                 // First Name
                 const Text(
                   'First Name',
@@ -177,7 +158,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Last Name
                 const Text(
                   'Last Name',
@@ -204,7 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Gender
                 const Text(
                   'Gender',
@@ -234,38 +215,15 @@ class _RegisterPageState extends State<RegisterPage> {
                     });
                   },
                   hint: const Text('Select your gender'),
-                ),
-                const SizedBox(height: 20),
-                
-                // Date of Birth
-                const Text(
-                  'Date of Birth',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _dobController,
-                  readOnly: true,
-                  onTap: () => _selectDate(context),
-                  decoration: InputDecoration(
-                    hintText: 'Select your date of birth',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    prefixIcon: const Icon(Icons.calendar_today),
-                  ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select your date of birth';
+                    if (value == null) {
+                      return 'Please select your gender';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Email
                 const Text(
                   'Email',
@@ -289,14 +247,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!value.contains('@')) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Password
                 const Text(
                   'Password',
@@ -310,16 +268,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    hintText: 'password',
+                    hintText: 'Password',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() {
@@ -339,7 +295,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                 ),
                 const SizedBox(height: 20),
-                
+
                 // Register button
                 SizedBox(
                   width: double.infinity,
@@ -365,11 +321,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                
+
                 // Login link
                 Center(
                   child: TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () =>Navigator.pushNamed(context, '/login_page'),
                     child: const Text(
                       'Already have an account? Sign in',
                       style: TextStyle(
